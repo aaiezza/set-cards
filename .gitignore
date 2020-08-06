@@ -1,0 +1,23 @@
+# Generated files
+*.class
+*.war
+*.jar
+target/
+logs/
+**/pom.xml.versionsBackup
+
+# System files
+.DS_Store
+
+# Eclipse files
+**/.project
+**/.settings
+**/.classpath
+.externalToolBuilders
+
+# Files containing sensitive data
+.env
+
+# Intellij files
+.idea/
+**/*.iml
