@@ -1,6 +1,7 @@
 package org.shaba.setcards;
 
 import static java.util.function.UnaryOperator.identity;
+
 import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
 

@@ -1,10 +1,10 @@
 package org.shaba.setcards;
 
+import io.vavr.Function3;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import io.vavr.Function3;
 
 @SuppressWarnings("serial")
 public class IsASetPredicate implements Function3<Card, Card, Card, Boolean>, Predicate<Set<Card>> {

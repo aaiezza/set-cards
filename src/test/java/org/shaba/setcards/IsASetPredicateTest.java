@@ -1,15 +1,16 @@
 package org.shaba.setcards;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.shaba.setcards.StandardCard.standardCardBuilder;
+
+import java.util.stream.Stream;
+import one.util.streamex.StreamEx;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.shaba.setcards.StandardCard.QuantitySelector;
-import java.util.stream.Stream;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.shaba.setcards.StandardCard.standardCardBuilder;
-import one.util.streamex.StreamEx;
 
 class IsASetPredicateTest {
   private IsASetPredicate subject;

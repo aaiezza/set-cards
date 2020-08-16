@@ -1,9 +1,10 @@
 package org.shaba.setcards;
 
-import org.junit.Test;
-import org.shaba.setcards.category.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.shaba.setcards.StandardCard.standardCardBuilder;
+
+import org.junit.Test;
+import org.shaba.setcards.category.*;
 
 public class StandardCardTest {
 
@@ -15,7 +16,7 @@ public class StandardCardTest {
         .returns(Color.GREEN, StandardCard::getColor)
         .returns(Fill.FILLED, StandardCard::getFill)
         .returns(Shape.FISH, StandardCard::getShape);
-    System.out.println(card); 
-    System.out.println(card.hashCode()); 
+    System.out.println(card);
+    System.out.println(card.hashCode());
   }
 }

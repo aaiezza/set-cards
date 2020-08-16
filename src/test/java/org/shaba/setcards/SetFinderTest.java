@@ -1,11 +1,12 @@
 package org.shaba.setcards;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.shaba.setcards.StandardCard.standardCardBuilder;
+
+import one.util.streamex.StreamEx;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.shaba.setcards.StandardCard.QuantitySelector;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.shaba.setcards.StandardCard.standardCardBuilder;
-import one.util.streamex.StreamEx;
 
 class SetFinderTest {
   private SetFinder subject;

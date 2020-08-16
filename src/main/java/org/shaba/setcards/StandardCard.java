@@ -1,8 +1,8 @@
 package org.shaba.setcards;
 
-import org.shaba.setcards.category.*;
 import lombok.AccessLevel;
 import one.util.streamex.StreamEx;
+import org.shaba.setcards.category.*;
 
 @lombok.Data
 @lombok.NonNull
