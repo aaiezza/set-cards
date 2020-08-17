@@ -2,19 +2,20 @@ package org.shaba.setcards.application;
 
 import static io.vavr.API.Try;
 import static java.lang.Integer.parseInt;
-import org.shaba.setcards.representation.CardParser;
-import org.shaba.setcards.representation.StandardCardParser;
+import static org.shaba.setcards.application.ConsoleRunner.Commands.DO_NOTHING;
+import static org.shaba.setcards.application.ConsoleRunner.Commands.printHelp;
+
+import io.vavr.API;
+import io.vavr.control.Try;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import static org.shaba.setcards.application.ConsoleRunner.Commands.DO_NOTHING;
-import static org.shaba.setcards.application.ConsoleRunner.Commands.printHelp;
-import io.vavr.API;
-import io.vavr.control.Try;
 import one.util.streamex.StreamEx;
+import org.shaba.setcards.representation.CardParser;
+import org.shaba.setcards.representation.StandardCardParser;
 
 @lombok.Data
 public class ConsoleRunner {
@@ -52,9 +53,7 @@ public class ConsoleRunner {
   }
 
   private static Consumer<Throwable> printErrorMessage(final PrintStream err) {
-    // TODO: Could be nicer
-    //    *  𝔼rror: `4FWE` is invalid
-    return t -> err.println(t.getMessage());
+    return t -> err.printf("𝔼rror: %s%n", t.getMessage());
   }
 
   private static void clearScreen(final PrintStream out) {
