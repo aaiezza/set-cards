@@ -1,6 +1,5 @@
 package org.shaba.setcards.application;
 
-import static io.vavr.Predicates.not;
 import static java.util.Collections.emptyList;
 import static org.shaba.setcards.SetFinder.setFinder;
 
@@ -9,7 +8,8 @@ import java.util.Set;
 import lombok.AccessLevel;
 import one.util.streamex.EntryStream;
 import one.util.streamex.StreamEx;
-import org.shaba.setcards.*;
+import org.shaba.setcards.Card;
+import org.shaba.setcards.SetFinder;
 
 @lombok.Data
 public class Game {
@@ -29,7 +29,16 @@ public class Game {
   }
 
   public Sets getAvailableSets() {
-    return new Sets(setFinder.findSets(fieldCards.getValue().toArray(StandardCard[]::new)));
+    return fieldCards.findSetsWith(setFinder);
+  }
+
+  public Game removeFieldCardsInSet(final int setIndex) {
+    return new Game(
+        setFinder,
+        getAvailableSets()
+            .getSetStream(setIndex)
+            .sequential()
+            .reduce(fieldCards, FieldCards::remove, (l, r) -> l));
   }
 
   @Override
@@ -41,7 +50,7 @@ public class Game {
     return new Game(setFinder(), new FieldCards());
   }
 
-  @lombok.Data
+  @lombok.EqualsAndHashCode
   @lombok.RequiredArgsConstructor(access = AccessLevel.PRIVATE)
   public static class FieldCards {
     private final List<Card> value;
@@ -50,13 +59,36 @@ public class Game {
       this(emptyList());
     }
 
+    public List<Card> asList() {
+      return value;
+    }
+
+    public StreamEx<Card> stream() {
+      return StreamEx.of(asList());
+    }
+
+    public EntryStream<Integer, Card> entryStream() {
+      return EntryStream.of(asList());
+    }
+
+    public Card[] asArray() {
+      return asList().toArray(Card[]::new);
+    }
+
+    public Sets findSetsWith(final SetFinder setFinder) {
+      return new Sets(setFinder.findSets(asArray()));
+    }
+
     public FieldCards add(final Card card) {
-      return new FieldCards(StreamEx.of(value).append(card).toImmutableList());
+      return new FieldCards(stream().append(card).toImmutableList());
     }
 
     public FieldCards remove(final Integer cardIndex) {
-      return new FieldCards(
-          EntryStream.of(value).filterKeys(not(cardIndex::equals)).values().toImmutableList());
+      return new FieldCards(entryStream().removeKeys(cardIndex::equals).values().toImmutableList());
+    }
+
+    public FieldCards remove(final Card card) {
+      return new FieldCards(stream().remove(card::equals).toImmutableList());
     }
 
     @Override
@@ -73,10 +105,14 @@ public class Game {
     }
   }
 
-  @lombok.Data
+  @lombok.EqualsAndHashCode
   @lombok.RequiredArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Sets {
-    private final List<Set<Card>> value;
+    @lombok.Getter private final List<Set<Card>> value;
+
+    public StreamEx<Card> getSetStream(final Integer setIndex) {
+      return StreamEx.of(value.get(setIndex));
+    }
 
     @Override
     public String toString() {

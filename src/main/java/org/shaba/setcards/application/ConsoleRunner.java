@@ -96,7 +96,7 @@ public class ConsoleRunner {
               case "clear":
                 return game -> Try(game::clearField);
               case "set":
-                return DO_NOTHING; // TODO
+                return game -> Try(() -> game.removeFieldCardsInSet(parseInt(cmd[1])));
               default:
                 return game -> Try(() -> cardParser.apply(cmd[0]).map(game::addFieldCard).get());
             }
