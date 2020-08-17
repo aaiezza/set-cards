@@ -1,25 +1,33 @@
 package org.shaba.setcards.application;
 
 import static io.vavr.API.Try;
-import static org.shaba.setcards.application.ConsoleRunner.Commands.DO_NOTHING;
-
-import io.vavr.API;
-import io.vavr.control.Try;
-import java.io.InputStream;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import static java.lang.Integer.parseInt;
 import org.shaba.setcards.representation.CardParser;
 import org.shaba.setcards.representation.StandardCardParser;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import static org.shaba.setcards.application.ConsoleRunner.Commands.DO_NOTHING;
+import static org.shaba.setcards.application.ConsoleRunner.Commands.printHelp;
+import io.vavr.API;
+import io.vavr.control.Try;
+import one.util.streamex.StreamEx;
 
 @lombok.Data
 public class ConsoleRunner {
   private final Game initialGame;
   private final Commands commands;
   private final InputStream inputStream;
+  private final PrintStream out;
+  private final PrintStream err;
 
   public void run() {
-    System.out.println(initialGame);
+    clearScreen(out);
+
+    out.println(initialGame);
 
     try (final Scanner sc = new Scanner(inputStream)) {
       final AtomicReference<Game> game = new AtomicReference<>(initialGame);
@@ -28,38 +36,42 @@ public class ConsoleRunner {
         final Command command =
             commands
                 .parseCommand(input)
-                .onFailure(t -> System.err.println(t.getMessage()))
+                .map(cmd -> cmd == Commands.HELP ? cmd.also(printHelp(out)) : cmd)
+                .onFailure(printErrorMessage(err))
                 .getOrElse(DO_NOTHING);
 
         if (command == Commands.EXIT) break;
 
-        System.out.println(
+        out.println(
             game.updateAndGet(
-                g ->
-                    command
-                        .apply(g)
-                        .onFailure(t -> System.err.println(t.getMessage()))
-                        .getOrElse(g)));
+                g -> command.apply(g).onFailure(printErrorMessage(err)).getOrElse(g)));
       }
     }
 
-    System.out.println(" :)");
+    out.println(" :)");
+  }
+
+  private static Consumer<Throwable> printErrorMessage(final PrintStream err) {
+    // TODO: Could be nicer
+    //    *  𝔼rror: `4FWE` is invalid
+    return t -> err.println(t.getMessage());
+  }
+
+  private static void clearScreen(final PrintStream out) {
+    out.print("\033[H\033[2J");
+    out.flush();
   }
 
   public static ConsoleRunner standardConsoleRunner() {
-    return new ConsoleRunner(Game.newGame(), Commands.standardCommands(), System.in);
-  }
-
-  @SuppressWarnings("unused")
-  private static void clearScreen() {
-    System.out.print("\033[H\033[2J");
-    System.out.flush();
+    return new ConsoleRunner(
+        Game.newGame(), Commands.standardCommands(), System.in, System.out, System.err);
   }
 
   @lombok.Data
   public static class Commands {
     public static final Command EXIT = null;
     public static final Command DO_NOTHING = game -> Try(() -> game);
+    public static final Command HELP = game -> Try(() -> game);
 
     private final CardParser cardParser;
 
@@ -71,11 +83,17 @@ public class ConsoleRunner {
       return API.<Command>Try(
           () -> {
             final String[] cmd = commandString.split("\\s+");
-            switch (cmd[0]) {
+            switch (cmd[0].toLowerCase()) {
               case "exit":
                 return EXIT;
+              case "?":
+              case "h":
+              case "help":
+                return HELP;
               case "rm":
-                return game -> Try(() -> game.removeFieldCard(Integer.parseInt(cmd[1])));
+              case "rem":
+                return game -> Try(() -> game.removeFieldCard(parseInt(cmd[1])));
+              case "c":
               case "clear":
                 return game -> Try(game::clearField);
               case "set":
@@ -85,10 +103,34 @@ public class ConsoleRunner {
             }
           });
     }
+
+    public static Runnable printHelp(final PrintStream out) {
+      return () -> {
+        out.println("𝔸vailable commands:");
+        out.printf(
+            StreamEx.of(
+                    "[123][RrGgPp][EeSsFf][OoFfDd] (card quantity, color, fill, shape)",
+                    "set",
+                    "rm,rem",
+                    "clear,c",
+                    "exit",
+                    "help,h,?")
+                .joining("%n ", " ", "%n%n"));
+      };
+    }
   }
 
   @FunctionalInterface
-  public static interface Command extends Function<Game, Try<Game>> {}
+  public static interface Command extends Function<Game, Try<Game>> {
+    public default Command also(final Runnable runnable) {
+      return andThen(
+              game -> {
+                runnable.run();
+                return game;
+              })
+          ::apply;
+    }
+  }
 
   /*
    * Welcome to Set

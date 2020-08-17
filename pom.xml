@@ -83,6 +83,7 @@
         <executions>
           <execution>
             <goals>
+              <goal>format</goal>
               <goal>check</goal>
             </goals>
           </execution>
